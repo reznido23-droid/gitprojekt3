@@ -1,38 +1,79 @@
-# Práce s Git a GitHub
-## Zadání práce
-Tento repozitář si zkopírujte do svého počítače, bude sloužit jako základ projektu. 
-Vytvořte si veřejný repozitář na GitHub a propojte ho s lokálním repozitářem, tím co jste si zkopírovali. 
-Vypracujte **zadání programu**, zkuste v průbehu trackovat změny pomocí **git commit**. Po vypracování programu napište vlastní README dokument, který bude sloužit jako návod pro zprovoznění vašeho programu (zapojení, stažení souborů, upravení konfiguračního souboru, nahrání na RPI pico...), nezapomeňte na soubor .gitignore, jelikož se v programu nacházi **API klíč, který nesmí být zveřejněn!!**, případně ignoruje soubory generované vývojovým prostředím jako například .vscode . 
-Váš výsledek nahrajte do GitHub repozitáře.
-V případě problému s přidáváním vzdáleného repozitáře využijte příkaz **git remote remove origin**.
+🌦️ MicroPython Weather Station (Pico W)
+Tento projekt je jednoduchá meteostanice vytvořená pro platformu Raspberry Pi Pico W. Zařízení se automaticky připojí k WiFi síti, zjistí svou geografickou polohu podle veřejné IP adresy a každých 10 minut stáhne aktuální počasí z API OpenWeatherMap. Výsledná data jsou zobrazena na LCD displeji.
 
+⚙️ Jak program funguje
+1️⃣ Po zapnutí zařízení
+Na LCD se zobrazí zpráva Connecting to WiFi... a proběhne pokus o připojení k nakonfigurované síti.
 
-### Zadání programu
-Program bude zahrnovat práci s API a LCD displejem, konfigurační soubor  bude ukládat v libovolném formátu údaje pro přihlášení k WiFi a API klíč. Spouštěcí soubor pro program bude main.py, program zhotovte pro platformu raspberry pi pico w.
+2️⃣ Po úspěšném připojení
+Program zavolá IP API (ip-api.com) a zjistí zeměpisnou šířku a délku. Tyto souřadnice se na několik sekund zobrazí přímo na displeji pro kontrolu polohy.
 
-Každých 10 minut zjišťujte aktuální počasí na aktuální lokaci pomocí API OpenWeatherMap. Klíč, který máte v clasroom  je omezen na 1000 za den, při testování ostatních částí programu si prosím zkopírujte ukázková JSON data z dokumentace. Aktuální geologickou lokaci si zjistěte pomocí veřejné IP adresy prostřednicvím [IP API](https://ip-api.com), toto API je zdarma a nevyžaduje klíč.
+3️⃣ Stažení dat
+Následně program kontaktuje OpenWeatherMap API, odkud získá:
 
-Po zapnutí zařízení se ukáže "Connecting to WiFi", po připojení k síti se na displeji zobrazí na pár sekund aktuální souřadnice, poté bude displej ukazovat data o počasí, která vám přijdou vhodná. 
+Aktuální teplotu (°C)
 
-Zařiďte základní robustnost programu jako automatické připojení k síti po výpadku, či upozornění na špatná data z API. 
+Vlhkost vzduchu (%)
 
-### Úprava programu
-Pomocí funkce fork na GitHub přidejte do kódu vaší dvojice funkcionalitu aktuálního času, na displej přidejte aktuální čas formátovaný HH:MM:SS synchronizovaného pomocí NTP, případně uvolněte pro tento údaj místo na displeji, poté využijte funkci contribute pro aktualizování repozitáře autora. Ověřte funkčnost.
+Slovní popis stavu počasí
 
-### Hodnocení
-Bude hodnoceno za 5 pouze při neplnění činosti na hodínách Dpr.
+4️⃣ Automatická smyčka
+Každých 10 minut proběhne nová aktualizace. Pokud vypadne WiFi, zařízení se automaticky pokusí znovu připojit. V případě chyby API se na displeji zobrazí varovná hláška.
 
+🗂️ Struktura projektu
+main.py – Hlavní spustitelný kód programu.
 
+config.json – Konfidenční soubor (ignorován v .gitignore).
 
+/lib/ – Složka s knihovnami pro hardware.
 
+lcd_api.py – Univerzální rozhraní pro displej.
 
+i2c_lcd.py – Specifický ovladač pro I2C komunikaci.
 
+.gitignore – Definice souborů, které se nenahrávají na GitHub.
 
+README.md – Tato dokumentace.
 
+🔐 Soubor config.json
+Soubor obsahuje citlivé údaje a nesmí být nahrán do veřejného repozitáře. Vytvořte jej v kořenovém adresáři se následující strukturou:
 
+JSON
+{
+    "ssid": "NAZEV_WIFI",
+    "password": "HESLO_WIFI",
+    "owm_api_key": "VAS_API_KLIC"
+}
+🌍 Použitá API
+IP API (http://ip-api.com/json): Slouží k získání polohy bez nutnosti GPS modulu. Nevyžaduje registraci ani klíč.
 
+OpenWeatherMap API: Slouží ke stažení meteodat. Vyžaduje vlastní API klíč. V rámci bezplatného tarifu je limit cca 1000 požadavků denně.
 
+🖥️ Použitý hardware
+Pro projekt je použit mikrokontrolér Raspberry Pi Pico W a standardní I2C LCD displej (16x2).
 
+Zapojení pinů:
 
-### pozor
-v github máte tlačítko copilot, umí programovat lépe než chatgpt, tak alespoň využívejte ty správné nástroje.
+SDA propojeno na GP0
+
+SCL propojeno na GP1
+
+VCC propojeno na 5V (VBUS)
+
+GND propojeno na GND
+
+🚀 Nahrání programu
+Firmware: Stáhněte a nahrajte MicroPython firmware (UF2 soubor) pro Pico W z oficiálních stránek micropython.org.
+
+Nahrání souborů: Pomocí prostředí Thonny nahrajte soubor main.py, složku /lib a váš vytvořený config.json do paměti zařízení.
+
+Spuštění: Uložte main.py jako hlavní soubor, odpojte a znovu připojte napájení nebo klikněte na "Run" v Thonny.
+
+🛡️ Robustnost programu
+Kód je navržen tak, aby byl odolný proti chybám:
+
+Obsahuje mechanismus pro automatické znovupřipojení k WiFi při ztrátě signálu.
+
+Má ošetřené výjimky při komunikaci s webovými servery (timeouty, chybné JSON odpovědi).
+
+Před každou aktualizací dat probíhá kontrola aktivního síťového rozhraní.
